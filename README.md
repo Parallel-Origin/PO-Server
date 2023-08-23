@@ -7,7 +7,9 @@ The c# gameserver of parallel origin.
 - .Net7 runtime
 
 ### Running
-- cd into `/ParallelOriginGameServer`
+- cd into `/ParallelOriginGameServer/Core`
+- `git submodule update --init --recursive`
+- `cd ..`
 - `dotnet build`
 - copy `pnv_biome.type_biome00k_c_1km_s0..0cm_2000..2017_v0.1.tif` into `/bin/Debug/net7.0/`
 - cd into `/bin/Debug/net7.0/`
