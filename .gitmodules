@@ -1,0 +1,3 @@
+[submodule "ParallelOriginGameServer/Core"]
+	path = ParallelOriginGameServer/Core
+	url = https://github.com/Parallel-Origin/PO-Core

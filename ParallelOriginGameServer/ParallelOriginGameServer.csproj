@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Configurations>Debug;Release;DEBUGTEST</Configurations>
+        <Platforms>AnyCPU</Platforms>
+        <OutputType>Exe</OutputType>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <TargetFramework>net7.0</TargetFramework>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <DefineConstants>TRACECOREAPP;SERVER</DefineConstants>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DefineConstants>TRACECOREAPP;SERVER</DefineConstants>
+        <Optimize>true</Optimize>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Arch" Version="1.2.6.5-alpha" />
+        <PackageReference Include="Arch.EventBus" Version="1.0.2" />
+        <PackageReference Include="Arch.LowLevel" Version="1.0.2" />
+        <PackageReference Include="Arch.System" Version="1.0.2" />
+        <PackageReference Include="Arch.System.SourceGenerator" Version="1.1.0" />
+        <PackageReference Include="CircularBuffer" Version="1.1.0" />
+        <PackageReference Include="Collections.Pooled" Version="2.0.0-preview.27" />
+        <PackageReference Include="ConcurrentHashSet" Version="1.3.0" />
+        <PackageReference Include="EFCore.NamingConventions" Version="7.0.2" />
+        <PackageReference Include="FluentBehaviourTree" Version="0.0.4" />
+        <PackageReference Include="LiteNetLib" Version="0.9.5.2" />
+        <PackageReference Include="Mapbox.Api" Version="0.1.1" />
+        <PackageReference Include="MaxRev.Gdal.Core" Version="3.3.3.120" />
+        <PackageReference Include="MaxRev.Gdal.LinuxRuntime.Minimal" Version="3.3.3.120" />
+        <PackageReference Include="MaxRev.Gdal.WindowsRuntime.Minimal" Version="3.3.3.110" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.3">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.3" />
+        <PackageReference Include="QuadTrees_Struct_Support" Version="1.0.0" />
+        <PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />
+        <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+        <PackageReference Include="ZLogger" Version="1.6.1" />
+        
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Migrations" />
+    </ItemGroup>
+
+</Project>
