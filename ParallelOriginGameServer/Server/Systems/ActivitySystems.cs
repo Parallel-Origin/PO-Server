@@ -6,6 +6,7 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using Arch.System;
+using Arch.System.SourceGenerator;
 using ParallelOrigin.Core.Base.Classes.Pattern.Prototype;
 using ParallelOrigin.Core.ECS;
 using ParallelOrigin.Core.ECS.Components;
@@ -51,7 +52,7 @@ public sealed partial class ChopSystem : BaseSystem<World,float>
     /// <param name="boxCollider">Its <see cref="BoxCollider"/>.</param>
     /// <param name="chop">Its <see cref="Chop"/>.</param>
     [Query]
-    [None(typeof(Dead), typeof(Prefab))]
+    [None<Dead, Prefab>]
     private void Chop(in Entity en, ref NetworkTransform transform, ref BoxCollider boxCollider, ref Chop chop)
     {
         // Build entity by increasing health each step... 
@@ -75,7 +76,10 @@ public sealed partial class ChopSystem : BaseSystem<World,float>
     }
 }
 
-
+/// <summary>
+///     The <see cref="BuildSystem"/> class
+///     manages the building of structures. 
+/// </summary>
 public sealed partial class BuildSystem : BaseSystem<World,float>
 {
     private readonly EntityPrototyperHierarchy _prototyperHierarchy;
@@ -86,14 +90,14 @@ public sealed partial class BuildSystem : BaseSystem<World,float>
     }
     
     /// <summary>
-    /// Prepares the build mechanism, spawns in the structure once in distance and withdraws the resources.
+    ///     Prepares the build mechanism, spawns in the structure once in distance and withdraws the items.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="identity">The <see cref="Identity"/>.</param>
     /// <param name="transform">The <see cref="NetworkTransform"/>.</param>
     /// <param name="build">The <see cref="Build"/> cmp.</param>
     [Query]
-    [None(typeof(Dead), typeof(Prefab))]
+    [None<Dead, Prefab>]
     private void BuildSetup(in Entity entity, ref Identity identity, ref NetworkTransform transform, ref Build build)
     {
         // Check if we reached the target
@@ -122,7 +126,7 @@ public sealed partial class BuildSystem : BaseSystem<World,float>
     }
     
     /// <summary>
-    /// Builds the referenced building step by step. 
+    ///     Builds the referenced building step by step. 
     /// </summary>
     /// <param name="state">The delta time.</param>
     /// <param name="entity">The <see cref="Entity"/>.</param>
@@ -131,7 +135,7 @@ public sealed partial class BuildSystem : BaseSystem<World,float>
     /// <param name="movement">The entities <see cref="Movement"/>.</param>
     /// <param name="build">The <see cref="Build"/>.</param>
     [Query]
-    [None(typeof(Dead), typeof(Prefab))]
+    [None<Dead, Prefab>]
     private void Build(float state, in Entity entity, ref NetworkTransform transform, ref BoxCollider boxCollider, ref Movement movement, ref Build build)
     {
         // Force entity to build position
@@ -169,9 +173,16 @@ public sealed partial class PickupSystem : BaseSystem<World,float>
     {
     }
     
+    /// <summary>
+    ///     Pickups the <see cref="ParallelOrigin.Core.ECS.Components.Interactions.Pickup.Target"/> once in reach.
+    /// </summary>
+    /// <param name="en">The <see cref="Entity"/>.</param>
+    /// <param name="transform">The <see cref="NetworkTransform"/>.</param>
+    /// <param name="boxCollider">The <see cref="BoxCollider"/>.</param>
+    /// <param name="pickup">The <see cref="Pickup"/>.</param>
     [Query]
-    [None(typeof(Dead), typeof(Prefab))]
-    private void Update(in Entity en, ref NetworkTransform transform, ref BoxCollider boxCollider, ref Pickup pickup)
+    [None<Dead, Prefab>]
+    private void Pickup(in Entity en, ref NetworkTransform transform, ref BoxCollider boxCollider, ref Pickup pickup)
     {
         // Build entity by increasing health each step... 
         ref var targetCollider = ref pickup.Target.Get<BoxCollider>();

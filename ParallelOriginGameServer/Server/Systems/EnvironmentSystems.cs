@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
+using Arch.System.SourceGenerator;
 using CommunityToolkit.HighPerformance;
 using ParallelOrigin.Core.Base.Classes;
 using ParallelOrigin.Core.Base.Classes.Pattern.Prototype;
@@ -43,7 +44,8 @@ public sealed class EnvironmentGroup : Group<float>
 }
 
 /// <summary>
-///     A system which iterates over <see cref="ChunkLoader" /> to load new chunks and leave the old ones as he is moving.
+///     The <see cref="ChunkSystem"/>
+///     manages the loading, assigning and deloading of <see cref="Chunk"/>s. 
 /// </summary>
 public partial class ChunkSystem : BaseSystem<World,float>
 {
@@ -54,8 +56,14 @@ public partial class ChunkSystem : BaseSystem<World,float>
     {
     }
 
+    /// <summary>
+    ///     Loads the chunks around <see cref="ChunkLoader"/>s.
+    /// </summary>
+    /// <param name="en">The <see cref="Entity"/>.</param>
+    /// <param name="chunkLoader">The <see cref="ChunkLoader"/></param>
+    /// <param name="transform">The <see cref="NetworkTransform"/>.</param>
     [Query]
-    [None(typeof(Prefab), typeof(Inactive))]
+    [None<Prefab,Inactive>]
     private void LoadChunks(in Entity en, ref ChunkLoader chunkLoader, ref NetworkTransform transform)
     {
         var oldCurrent = chunkLoader.Current;
@@ -75,8 +83,13 @@ public partial class ChunkSystem : BaseSystem<World,float>
         Program.Logger.ZLogInformation(Logs.ChunkSwitch, en, chunkLoader.Previous.X, chunkLoader.Previous.Y, chunkLoader.Current.X, chunkLoader.Current.Y);
     }
     
+    /// <summary>
+    ///     Clears inactive <see cref="ChunkLoader"/>s.
+    /// </summary>
+    /// <param name="en">The <see cref="Entity"/>.</param>
+    /// <param name="loader">The <see cref="ChunkLoader"/>.</param>
     [Query]
-    [All(typeof(Inactive))]
+    [None<Inactive>]
     private void ClearInactiveChunkLoaders(in Entity en, ref ChunkLoader loader)
     {
         // Prevent cleaning already cleaned chunk loaders
@@ -97,8 +110,13 @@ public partial class ChunkSystem : BaseSystem<World,float>
         Program.Logger.ZLogInformation(Logs.SingleAction, "Removed Chunkloader", "Entity became inactive", en);
     }
     
+    /// <summary>
+    ///     Deloads the chunks.
+    /// </summary>
+    /// <param name="en">The <see cref="Entity"/>.</param>
+    /// <param name="ch">The <see cref="Chunk"/>.</param>
     [Query]
-    [None(typeof(Destroy), typeof(Prefab))]
+    [None<Destroy, Prefab>]
     private void DeloadChunks(in Entity en, ref Chunk ch)
     {
         // Either add destroy after or remove it... 
@@ -122,8 +140,12 @@ public partial class ChunkSystem : BaseSystem<World,float>
         Program.Logger.ZLogInformation(Logs.Chunk, "Marked for destruction", en, ch.Grid.X, ch.Grid.Y);
     }
     
+    /// <summary>
+    ///     Destroys <see cref="Chunk"/>s when marked as destroy.
+    /// </summary>
+    /// <param name="ch"></param>
     [Query]
-    [All(typeof(Destroy)), None(typeof(Prefab))]
+    [All<Destroy>, None<Prefab>]
     private void DestroyChunk(ref Chunk ch)
     {
         foreach (var entity in ch.Contains.Get())
@@ -136,8 +158,13 @@ public partial class ChunkSystem : BaseSystem<World,float>
         }
     }
     
+    /// <summary>
+    ///     Assigns <see cref="NetworkTransform"/>-Values to the <see cref="Chunk"/>s.
+    /// </summary>
+    /// <param name="ch">The <see cref="Chunk"/>.</param>
+    /// <param name="transform">The <see cref="NetworkTransform"/>.</param>
     [Query]
-    [None(typeof(Prefab))]
+    [None<Prefab>]
     private void ChunkTransform(ref Chunk ch, ref NetworkTransform transform)
     {
         var grid = TileExtensions.GridToTile(in ch.Grid, in ChunkZoom);
@@ -147,7 +174,8 @@ public partial class ChunkSystem : BaseSystem<World,float>
 }
 
 /// <summary>
-///     A system which assigns chunks to entities and makes sure they are always in the correct one. 
+///     The <see cref="ChunkAssignmentSystem"/> class
+///     manages the entering and leaving of <see cref="Chunk"/>s for entities like players, mobs and resources. 
 /// </summary>
 public sealed partial class ChunkAssignmentSystem : BaseSystem<World, float>
 {
@@ -157,8 +185,13 @@ public sealed partial class ChunkAssignmentSystem : BaseSystem<World, float>
     {
     }
     
+    /// <summary>
+    ///     Makes an <see cref="Entity"/> enter and switch chunks based on their movement.
+    /// </summary>
+    /// <param name="en">The <see cref="Entity"/>.</param>
+    /// <param name="transform">The <see cref="NetworkTransform"/>.</param>
     [Query]
-    [None(typeof(Destroy), typeof(Inactive), typeof(Prefab))]
+    [None<Destroy, Inactive, Prefab>]
     private void EnterAndSwitchChunk(in Entity en, ref NetworkTransform transform)
     {
         // Calculate the grid we are in and assign it.
@@ -171,8 +204,13 @@ public sealed partial class ChunkAssignmentSystem : BaseSystem<World, float>
         transform.Chunk = grid;
     }
     
+    /// <summary>
+    ///     Makes an <see cref="Entity"/> leave a <see cref="Chunk"/> once marked for destroy. 
+    /// </summary>
+    /// <param name="en"></param>
+    /// <param name="transform"></param>
     [Query]
-    [All(typeof(Destroy)), None(typeof(Chunk), typeof(Prefab))]
+    [All<Destroy>, None<Chunk, Prefab>]
     private void LeaveChunk(in Entity en, ref NetworkTransform transform)
     {
         var chunkEntity = World.GetChunk(in transform.Chunk);
@@ -187,7 +225,8 @@ public sealed partial class ChunkAssignmentSystem : BaseSystem<World, float>
 }
 
 /// <summary>
-///     Chooses a biome for each newly created <see cref="Chunk" /> based on its geo location and the passed biome geo tiff
+///     The <see cref="BiomeSystem"/> class
+///     manages the creation of <see cref="Chunk"/>-Biomes.
 /// </summary>
 public sealed partial class BiomeSystem : BaseSystem<World,float>
 {
@@ -200,8 +239,13 @@ public sealed partial class BiomeSystem : BaseSystem<World,float>
         this._entityPrototyperHierarchy = entityPrototyperHierarchy;
     }
     
+    /// <summary>
+    ///     Choses a <see cref="Chunk"/>-Biome for a <see cref="Chunk"/> and assigns it.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="transform">The <see cref="NetworkTransform"/>.</param>
     [Query]
-    [All(typeof(Created), typeof(Chunk)), None(typeof(Prefab))]
+    [All<Created, Chunk>, None<Prefab>]
     private void ChooseChunkBiome(in Entity entity, ref NetworkTransform transform)
     {
         // Query the biome code based on real world data.
@@ -255,9 +299,9 @@ public sealed partial class BiomeSystem : BaseSystem<World,float>
     /// <summary>
     ///     Filters a list of <see cref="Entity" /> biomes by their biomecode and returns those with the fitting biomecode.
     /// </summary>
-    /// <param name="biomeCode"></param>
-    /// <param name="biomePrefabs"></param>
-    /// <param name="filteredBiomePrefabs"></param>
+    /// <param name="biomeCode">The biomecode.</param>
+    /// <param name="biomePrefabs">The prefab-entities.</param>
+    /// <param name="filteredBiomePrefabs">The filtered biome-prefabs.</param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private ReadOnlySpan<Entity> GetByBiomeId(byte biomeCode, ReadOnlySpan<Entity> biomePrefabs, ref Span<Entity> filteredBiomePrefabs)
@@ -279,7 +323,8 @@ public sealed partial class BiomeSystem : BaseSystem<World,float>
 }
 
 /// <summary>
-///     Processes <see cref="Woodland" /> chunks, generates terrain noise data for it and attaches it to the chunk
+///     The <see cref="GeneratorSystem"/> class
+///     generates the environment based on the <see cref="Chunk"/>-Biomes.
 /// </summary>
 public sealed partial class GeneratorSystem : BaseSystem<World,float>
 {
@@ -289,8 +334,14 @@ public sealed partial class GeneratorSystem : BaseSystem<World,float>
     {
     }
 
+    /// <summary>
+    ///     Generates woodland noise for <see cref="Woodland"/>-<see cref="Chunk"/>s.
+    /// </summary>
+    /// <param name="woodland">The <see cref="Woodland"/>.</param>
+    /// <param name="forestLayer">The <see cref="ForestLayer"/>.</param>
+    /// <param name="transform">The <see cref="NetworkTransform"/>.</param>
     [Query]
-    [All(typeof(Created), typeof(Chunk)), None(typeof(Prefab))]
+    [All<Created,Chunk>, None<Prefab>]
     private void GenerateWoodLand(ref Woodland woodland, ref ForestLayer forestLayer, ref NetworkTransform transform)
     {
         var sw = new Stopwatch();
@@ -310,8 +361,15 @@ public sealed partial class GeneratorSystem : BaseSystem<World,float>
         //noiseData.ToBitMap(@"C:\Users\Lars\Desktop\img_"+en.Get<Identity>().id+"_Woodland.bmp");
     }
     
+    /// <summary>
+    ///     Generates grassland noise for <see cref="Grassland"/>-<see cref="Chunk"/>s.
+    /// </summary>
+    /// <param name="grassland">The <see cref="Grassland"/>.</param>
+    /// <param name="forestLayer">The <see cref="ForestLayer"/>.</param>
+    /// <param name="rockLayer">The <see cref="RockLayer"/>.</param>
+    /// <param name="transform">The <see cref="NetworkTransform"/>.</param>
     [Query]
-    [All(typeof(Created), typeof(Chunk)), None(typeof(Prefab))]
+    [All<Created,Chunk>, None<Prefab>]
     private void GenerateGrassland(ref Grassland grassland, ref ForestLayer forestLayer, ref RockLayer rockLayer, ref NetworkTransform transform)
     {
         // Create forest noise 
@@ -338,7 +396,8 @@ public sealed partial class GeneratorSystem : BaseSystem<World,float>
 }
 
 /// <summary>
-///     Processes <see cref="ForestLayer" /> of chunks and spawns forest.
+///     The <see cref="SpawnerSystem"/> class
+///     spawns in the resource-entities based on the chunk-biomes and noise maps.
 /// </summary>
 public sealed partial class SpawnerSystem : BaseSystem<World,float>
 {
@@ -349,8 +408,15 @@ public sealed partial class SpawnerSystem : BaseSystem<World,float>
         this._prototyperHierarchy = prototyperHierarchy;
     }
     
+    /// <summary>
+    ///     Spawns in <see cref="Woodland"/> entities.
+    /// </summary>
+    /// <param name="en">The <see cref="Entity"/>.</param>
+    /// <param name="ch">The <see cref="Chunk"/>.</param>
+    /// <param name="woodland">The <see cref="Woodland"/>.</param>
+    /// <param name="layer">The <see cref="ForestLayer"/>.</param>
     [Query]
-    [All(typeof(Created), typeof(Woodland)), None(typeof(Prefab))]
+    [All<Created,Woodland>, None<Prefab>]
     private void SpawnWoodland(in Entity en, ref Chunk ch, ref Woodland woodland, ref ForestLayer layer)
     {
         // Chunk should (re)generate when there no resources in it
@@ -387,8 +453,16 @@ public sealed partial class SpawnerSystem : BaseSystem<World,float>
         Program.Logger.ZLogInformation(Logs.Spawning, "Woodland", counter, en);
     }
     
+    /// <summary>
+    ///     Spawns in <see cref="Grassland"/> entities.
+    /// </summary>
+    /// <param name="en">The <see cref="Entity"/>.</param>
+    /// <param name="ch">The <see cref="Chunk"/>.</param>
+    /// <param name="grassland">The <see cref="Grassland"/>.</param>
+    /// <param name="forestLayer">The <see cref="ForestLayer"/>.</param>
+    /// <param name="rockLayer">The <see cref="RockLayer"/>.</param>
     [Query]
-    [All(typeof(Created), typeof(Grassland)), None(typeof(Prefab))]
+    [All<Created,Grassland>, None<Prefab>]
     private void SpawnGrassland(in Entity en, ref Chunk ch, ref Grassland grassland, ref ForestLayer forestLayer, ref RockLayer rockLayer)
     {
         // Chunk should (re)generate when there no resources in it
@@ -464,7 +538,7 @@ public sealed partial class SpawnerSystem : BaseSystem<World,float>
     /// <param name="rock"></param>
     /// <param name="entity"></param>
     /// <returns></returns>
-    public static bool CanSpawn(float forest, float rock, ref BiomeEntity entity)
+    private static bool CanSpawn(float forest, float rock, ref BiomeEntity entity)
     {
         bool forestBool;
         if (entity.ForestCondition == NoiseCondition.GREATER)

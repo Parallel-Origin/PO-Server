@@ -1,5 +1,6 @@
 using Arch.Core;
 using Arch.System;
+using Arch.System.SourceGenerator;
 using FluentBehaviourTree;
 using ParallelOrigin.Core.ECS.Components;
 using ParallelOrigin.Core.ECS.Components.Combat;
@@ -21,7 +22,8 @@ public sealed class BehaviourGroup : Group<float>
 }
 
 /// <summary>
-///     A system which iterates over all <see cref="AnimationController" /> with <see cref="Animation" />'s to run their BT for controlling the animation states.
+///     The <see cref="ControllerSystem"/> class 
+///     controlls the behaviour-trees acting as controllers for ai, animations and more.
 /// </summary>
 public sealed partial class ControllerSystem : BaseSystem<World, float>
 {    
@@ -30,12 +32,12 @@ public sealed partial class ControllerSystem : BaseSystem<World, float>
      }
     
     /// <summary>
-    /// Iterates over all <see cref="AiController"/> to update them accordingly.
+    ///     Iterates over all <see cref="AiController"/> to update them accordingly.
     /// </summary>
     /// <param name="state">The delta time.</param>
     /// <param name="aiController">The entities <see cref="AiController"/>.</param>
     [Query]
-    [None(typeof(Prefab), typeof(Dead))]
+    [None<Dead, Prefab>]
     private void AiController(float state, ref AiController aiController)
     {
         var timeData = new TimeData(state);
@@ -43,12 +45,12 @@ public sealed partial class ControllerSystem : BaseSystem<World, float>
     }
 
     /// <summary>
-    /// Iterates over all <see cref="Animation"/> to update them accordingly.
+    ///     Iterates over all <see cref="Animation"/> to update them accordingly.
     /// </summary>
     /// <param name="state">The delta time.</param>
     /// <param name="ac">The entities <see cref="Animation"/>.</param>
     [Query]
-    [None(typeof(Prefab), typeof(Dead))]
+    [None<Dead, Prefab>]
     private void AnimationController(float state, ref Animation ac)
     {
         // Resetting triggers once, so that they never stay. 
@@ -58,7 +60,9 @@ public sealed partial class ControllerSystem : BaseSystem<World, float>
 }
 
 /// <summary>
-///     Its own system since its place might vary. Might can be merged with the animation controller system, on the other hand it should be possible to have animations without an explicit controller.
+///     The <see cref="ClearTrackedAnimationsSystem"/>
+///     clears the tracked animation-variables once per frame.
+///     Important for the way animations work.
 /// </summary>
 public sealed partial class ClearTrackedAnimationsSystem : BaseSystem<World,float>
 {
@@ -67,7 +71,7 @@ public sealed partial class ClearTrackedAnimationsSystem : BaseSystem<World,floa
     }
     
     [Query]
-    [None(typeof(Prefab))]
+    [None<Prefab>]
     private void ClearAnimation(ref Animation animation)
     {
         animation.BoolParams.Get().ClearTracked();
