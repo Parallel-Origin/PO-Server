@@ -33,7 +33,8 @@ public sealed class InteractionGroup : Group<float>
 }
 
 /// <summary>
-///     A system processing <see cref="Clicked" /> entities to spawn popups for them.
+///     The <see cref="OnClickPopUpSystem"/> class
+///     manages <see cref="Clicked"/> components to spawn popups and close them.
 /// </summary>
 public sealed partial class OnClickPopUpSystem : BaseSystem<World,float>
 {
@@ -41,6 +42,12 @@ public sealed partial class OnClickPopUpSystem : BaseSystem<World,float>
     {
     }
     
+    /// <summary>
+    ///     Spawns a <see cref="Popup"/> on click.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="clicked">The <see cref="Clicked"/>.</param>
+    /// <param name="spawnPopUp">The <see cref="OnClickedSpawnPopUp"/>.</param>
     [Query]
     [None<Prefab>]
     private void OnClickSpawnPopup(in Entity entity, ref Toggle<Clicked> clicked, ref OnClickedSpawnPopUp spawnPopUp)
@@ -53,6 +60,11 @@ public sealed partial class OnClickPopUpSystem : BaseSystem<World,float>
         PopUpCommandSystem.Add(new PopUpCommand(spawnPopUp.Type, owner, target));
     }
     
+    /// <summary>
+    ///     Destroys a popup on click of its child, e.g. a option.
+    /// </summary>
+    /// <param name="clicked">The <see cref="Clicked"/>.</param>
+    /// <param name="child">The <see cref="Child"/>.</param>
     [Query]
     [All<Option, OnClickedDestroyPopup>, None<Prefab>]
     private void OnClickDestroyPopup(ref Toggle<Clicked> clicked, ref Child child)
@@ -66,7 +78,8 @@ public sealed partial class OnClickPopUpSystem : BaseSystem<World,float>
 }
 
 /// <summary>
-///     A system iterating ober <see cref="Option" />'s which were <see cref="Clicked" /> and <see cref="OnClickedChop" /> to make the clicker go and chop down the clicked entity.
+///     The <see cref="OnClickUserActivitySystem"/> class
+///     manages <see cref="Clicked"/> components that are targeting user actions, like starting chopping, picking up items and co.
 /// </summary>
 public sealed partial class OnClickUserActivitySystem : BaseSystem<World,float>
 {
@@ -75,6 +88,11 @@ public sealed partial class OnClickUserActivitySystem : BaseSystem<World,float>
     {
     }
     
+    /// <summary>
+    ///     Starts chopping. 
+    /// </summary>
+    /// <param name="child">The <see cref="Child"/>.</param>
+    /// <param name="clicked">The <see cref="Clicked"/>.</param>
     [Query]
     [All<Option,OnClickedChop>, None<Prefab>]
     private void OnClickChop(ref Child child, ref Toggle<Clicked> clicked)
@@ -115,6 +133,11 @@ public sealed partial class OnClickUserActivitySystem : BaseSystem<World,float>
         Program.Logger.ZLogDebug(Logs.Action, "Clicked on chop", LogStatus.Sucessfull, clicker, clickedEntity);
     }
     
+    /// <summary>
+    ///     Visits the clicked entity. 
+    /// </summary>
+    /// <param name="child">The <see cref="Child"/>.</param>
+    /// <param name="clicked">The <see cref="Clicked"/>.</param>
     [Query]
     [All<Option,OnClickedVisit>, None<Prefab>]
     private void OnClickVisit(ref Child child, ref Toggle<Clicked> clicked)
@@ -151,6 +174,11 @@ public sealed partial class OnClickUserActivitySystem : BaseSystem<World,float>
         Program.Logger.ZLogInformation(Logs.SingleAction, "Clicked on Visit", clickedTransform.Pos, clicker);
     }
     
+    /// <summary>
+    ///     Starts attacking the clicked entity.
+    /// </summary>
+    /// <param name="child">The <see cref="Child"/>.</param>
+    /// <param name="clicked">The <see cref="Clicked"/>.</param>
     [Query]
     [All<Option,OnClickedAttack>, None<Prefab>]
     private void OnClickAttack(ref Child child, ref Clicked clicked)
@@ -189,6 +217,11 @@ public sealed partial class OnClickUserActivitySystem : BaseSystem<World,float>
         Program.Logger.ZLogInformation(Logs.SingleAction, "Clicked on Attack", clickedEntity, clicker);
     }
     
+    /// <summary>
+    ///     Pickups an item on click.
+    /// </summary>
+    /// <param name="child">The <see cref="Child"/>.</param>
+    /// <param name="clicked">The <see cref="Clicked"/>.</param>
     [Query]
     [All<Option,OnClickedPickup>, None<Prefab>]
     private void OnClickPickup(ref Child child, ref Clicked clicked)
@@ -230,7 +263,8 @@ public sealed partial class OnClickUserActivitySystem : BaseSystem<World,float>
 }
 
 /// <summary>
-///     A system which adds the targets owner name of a popup to it once after being created ( For example the owner name of a flag )
+///     The <see cref="OwnerNameLocalisationSystem"/> class
+///     is used to insert runtime localisations into ui elements like player or building names.  
 /// </summary>
 public sealed partial class OwnerNameLocalisationSystem : BaseSystem<World,float>
 {
@@ -239,6 +273,11 @@ public sealed partial class OwnerNameLocalisationSystem : BaseSystem<World,float
     {
     }
     
+    /// <summary>
+    ///     Inserts the players name into the <see cref="Localizations"/> once the entity with <see cref="OwnerNameLocalisation"/> was created. 
+    /// </summary>
+    /// <param name="popup"></param>
+    /// <param name="localizations"></param>
     [Query]
     [All<Created,OwnerNameLocalisation>, None<Prefab>]
     private void OnCreateLocalise(ref Popup popup, ref Localizations localizations)
