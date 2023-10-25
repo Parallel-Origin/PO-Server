@@ -27,8 +27,7 @@ using Structure = ParallelOrigin.Core.ECS.Components.Structure;
 namespace ParallelOriginGameServer.Server.Systems;
 
 /// <summary>
-///     A system group which controlls all systems which process commands.
-///     Basically entities which contain logic to do something once.
+///     A system group that controlls all systems which communicate with the database.
 /// </summary>
 public sealed class DatabaseGroup : Group<float>
 {
@@ -52,7 +51,8 @@ public sealed class DatabaseGroup : Group<float>
 }
 
 /// <summary>
-///     An system which saves the <see cref="GameDbContext" /> once being called.
+///     The <see cref="PersistenceSystem"/> class
+///     saves the <see cref="GameDbContext" /> once being called.
 /// </summary>
 public class PersistenceSystem : BaseSystem<World,float>
 {
@@ -109,8 +109,8 @@ public class PersistenceSystem : BaseSystem<World,float>
 }
 
 /// <summary>
-///     Iterates over <see cref="ParallelOrigin.Core.ECS.Components.Chunk" /> without <see cref="Model" />'s to create and assign them properly.
-///     Thats often the case when a new chunk gets created without any model.
+///     The <see cref="ModelSystem"/> class
+///     ensures that all game-entities without a <see cref="Model"/> component get one and are therefore stored in the database during the next save.
 /// </summary>
 public sealed partial class ModelSystem : BaseSystem<World,float>
 {
@@ -285,7 +285,9 @@ public sealed partial class ModelSystem : BaseSystem<World,float>
 
 
 /// <summary>
-///     A system which iterates over all <see cref="Chunk" /> to update their <see cref="Model" /> for being saved correctly and updated.
+///     The <see cref="ModelUpdateSystem"/> class
+///     updates the <see cref="Model"/> components by transferring the current state of the respective entities into them.
+///     Thus the database entities are kept up to date at the next save.
 /// </summary>
 public sealed partial class ModelUpdateSystem : BaseSystem<World,float>
 {
@@ -464,7 +466,9 @@ public sealed partial class ModelUpdateSystem : BaseSystem<World,float>
 }
 
 /// <summary>
-///     A system iterating over <see cref="Destroy" />'ed <see cref="Chunk" />'s with a <see cref="Model" /> to detach it from the database to clean up memory.
+///     The <see cref="DeleteAndDetachModelSystem"/> class
+///     ensures that entities are appropriately removed from the database with <see cref="Destroy"/> or <see cref="Delete"/> during the next save.
+///     At least those that should also be removed from it. 
 /// </summary>
 public sealed partial class DeleteAndDetachModelSystem : BaseSystem<World,float>
 {
