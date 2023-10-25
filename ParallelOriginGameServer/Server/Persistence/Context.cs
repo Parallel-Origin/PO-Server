@@ -17,7 +17,7 @@ namespace ParallelOriginGameServer.Server.Persistence;
 public class GameDbContext : DbContext
 {
     /// <summary>
-    ///     The connection string for the nosql database instance.
+    ///     The connection string for the posgresql database instance.
     /// </summary>
     private const string ConnectionString = "DATABASE-STRING";
     
@@ -25,6 +25,14 @@ public class GameDbContext : DbContext
     ///     If true, a in memory database is used.
     /// </summary>
     private readonly bool _inMemory;
+    
+    /// <summary>
+    ///     Initializes a new <see cref="DbContext"/> for a database instance.
+    /// <remarks>Requires <see cref="ConnectionString"/> being set.</remarks>
+    /// </summary>
+    public GameDbContext() : this(false)
+    {
+    }
     
     /// <summary>
     ///     Initializes a new <see cref="DbContext"/>.
