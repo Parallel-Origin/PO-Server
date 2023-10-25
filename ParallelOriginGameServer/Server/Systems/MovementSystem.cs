@@ -15,8 +15,7 @@ using ZLogger;
 namespace ParallelOriginGameServer.Server.Systems;
 
 /// <summary>
-///     A system group which controlls all systems which process commands.
-///     Basically entities which contain logic to do something once.
+///     A system group which controlls all systems that make something move or rotate. 
 /// </summary>
 public sealed class MovementGroup : Group<float>
 {
@@ -28,7 +27,8 @@ public sealed class MovementGroup : Group<float>
 }
 
 /// <summary>
-///     A system which moves <see cref="NetworkTransform" /> towards its <see cref="Movement" />
+///     The <see cref="MovementSystem"/> class
+///     calculates the movement of entities and their rotation. It virtually ensures that they move and rotate. 
 /// </summary>
 public sealed partial class MovementSystem : BaseSystem<World, float>
 {
