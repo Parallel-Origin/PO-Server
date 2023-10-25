@@ -38,7 +38,8 @@ public sealed class NetworkingGroup : Group<float>
 }
 
 /// <summary>
-///     An system which reacts to added <see cref="Character" />'s to send them to the client for showing up properly.
+///     The <see cref="CharacterNetworkSystem"/> class
+///     sends position, life and other attributes to the respective player. 
 /// </summary>
 public sealed partial class CharacterNetworkSystem : BaseSystem<World,float>
 {
@@ -125,7 +126,8 @@ public sealed partial class CharacterNetworkSystem : BaseSystem<World,float>
 
 
 /// <summary>
-///     A system iterating over newly <see cref="Created" /> <see cref="Popup" />'s to send them to client they belong to.
+///     The <see cref="PopUpNetworkSystem"/> class
+///     sends newly created or destroyed popups and options to the respective player.
 /// </summary>
 public sealed partial class PopUpNetworkSystem : BaseSystem<World,float>
 {
